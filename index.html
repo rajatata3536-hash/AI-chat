@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
 <title>AI Chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 *{box-sizing:border-box;font-family:Arial}
 body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  flex-direction:column;
+  margin:0;height:100vh;
+  display:flex;flex-direction:column;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   color:#fff;
 }
@@ -32,15 +30,13 @@ header{
   padding:10px 14px;
   border-radius:14px;
   margin-bottom:10px;
-  word-wrap:break-word;
 }
 .user{background:#4CAF50;margin-left:auto}
 .bot{background:#37474F}
 .time{
-  font-size:10px;
+  font-size:11px;
   opacity:.7;
   margin-top:4px;
-  text-align:right;
 }
 .bar{
   display:flex;
@@ -49,7 +45,7 @@ header{
   padding:8px;
   background:#00000080;
 }
-input[type=text]{
+input{
   flex:1;
   padding:10px 14px;
   border-radius:22px;
@@ -62,36 +58,34 @@ button{
   cursor:pointer;
 }
 .icon{
-  width:42px;
-  height:42px;
+  width:42px;height:42px;
   border-radius:50%;
+  font-size:18px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:18px;
   color:#fff;
 }
 .plus{background:#444}
+.mic{background:#FFC107;color:#000}
 .send{background:#4CAF50}
-.mic{background:#ffca28;color:#000}
-.mic.active{
-  background:#ff5252;
-  box-shadow:0 0 12px #ff5252;
-}
 #menu{
   position:absolute;
   bottom:70px;
   left:10px;
   background:#1c313a;
   border-radius:12px;
-  padding:6px;
   display:none;
+  padding:6px;
 }
 #menu button{
+  background:none;
+  color:#fff;
   width:140px;
   padding:10px;
-  color:#fff;
-  background:none;
+  display:flex;
+  align-items:center;
+  gap:8px;
 }
 #menu button:hover{background:#263238}
 input[type=file]{display:none}
@@ -103,10 +97,7 @@ input[type=file]{display:none}
 <header>AI Chat</header>
 
 <div id="chat">
-  <div class="msg bot">
-    👋 Hello! Ask anything.
-    <div class="time"></div>
-  </div>
+  <div class="msg bot">👋 Hello! Ask anything.</div>
 </div>
 
 <div id="menu">
@@ -115,102 +106,88 @@ input[type=file]{display:none}
 </div>
 
 <div class="bar">
-  <button class="icon plus" onclick="toggleMenu()">+</button>
-  <input id="input" type="text" placeholder="Type or speak...">
-  <button class="icon mic" id="micBtn">🎤</button>
-  <button class="icon send" onclick="send()">➤</button>
+  <button class="icon plus" onclick="toggleMenu()">＋</button>
+  <input id="input" placeholder="Type or speak..." oninput="toggleSend()">
+  <button class="icon mic" onclick="startVoice()">🎤</button>
+  <button class="icon send" id="sendBtn" onclick="send()" style="display:none">➤</button>
 </div>
 
-<input id="cam" type="file" accept="image/*" capture="environment" onchange="showImage(this)">
-<input id="gal" type="file" accept="image/*" onchange="showImage(this)">
+<input type="file" id="cam" accept="image/*" capture="environment" onchange="showImage(this)">
+<input type="file" id="gal" accept="image/*" onchange="showImage(this)">
 
 <script>
 const chat=document.getElementById("chat");
 const input=document.getElementById("input");
+const sendBtn=document.getElementById("sendBtn");
 const menu=document.getElementById("menu");
 const cam=document.getElementById("cam");
 const gal=document.getElementById("gal");
-let lastTime=0;
 
 function now(){
   return new Date().toLocaleTimeString();
 }
 
 function addMsg(text,cls){
-  const div=document.createElement("div");
-  div.className="msg "+cls;
-  div.innerHTML=text+`<div class="time">${now()}</div>`;
-  chat.appendChild(div);
+  const d=document.createElement("div");
+  d.className="msg "+cls;
+  d.innerHTML=text+`<div class="time">${now()}</div>`;
+  chat.appendChild(d);
   chat.scrollTop=chat.scrollHeight;
+}
+
+function toggleSend(){
+  sendBtn.style.display=input.value.trim()? "flex":"none";
 }
 
 function send(){
   const v=input.value.trim();
   if(!v) return;
-
-  const t=Date.now();
-  if(t-lastTime<1000){
-    addMsg("⚠️ Slow down...","bot");
-    return;
-  }
-  lastTime=t;
-
   addMsg(v,"user");
   input.value="";
+  toggleSend();
+  fakeAI(v);
+}
 
-  setTimeout(()=>{
-    addMsg("⚠️ Real AI reply needs backend","bot");
-  },500);
+function fakeAI(text){
+  let reply="🤖 I understood: "+text;
+  setTimeout(()=>addMsg(reply,"bot"),700);
 }
 
 function toggleMenu(){
   menu.style.display=menu.style.display==="block"?"none":"block";
 }
-function openCamera(){cam.click();menu.style.display="none";}
-function openGallery(){gal.click();menu.style.display="none";}
+
+function openCamera(){
+  cam.click();
+  menu.style.display="none";
+}
+
+function openGallery(){
+  gal.click();
+  menu.style.display="none";
+}
 
 function showImage(inp){
   const f=inp.files[0];
   if(!f) return;
-  const img=URL.createObjectURL(f);
-  addMsg(`<img src="${img}" style="max-width:100%;border-radius:12px">`,"user");
+  const url=URL.createObjectURL(f);
+  addMsg(`<img src="${url}" style="max-width:100%;border-radius:12px">`,"user");
 }
 
-/* ===== VOICE INPUT ===== */
-let recognition;
-let listening=false;
-
-function initVoice(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){
-    alert("Voice input not supported");
+function startVoice(){
+  if(!("webkitSpeechRecognition"in window)){
+    alert("Voice not supported");
     return;
   }
-  recognition=new SR();
-  recognition.lang="en-IN";
-  recognition.onresult=e=>{
+  const r=new webkitSpeechRecognition();
+  r.lang="en-IN";
+  r.onresult=e=>{
     input.value=e.results[0][0].transcript;
+    toggleSend();
     send();
   };
-  recognition.onend=()=>{
-    listening=false;
-    micBtn.classList.remove("active");
-  };
+  r.start();
 }
-
-micBtn.onclick=()=>{
-  if(!recognition) initVoice();
-  if(!recognition) return;
-
-  if(listening){
-    recognition.stop();
-    listening=false;
-  }else{
-    recognition.start();
-    listening=true;
-    micBtn.classList.add("active");
-  }
-};
 </script>
 
 </body>
