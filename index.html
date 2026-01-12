@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Talking Voice Calculator Pro</title>
+<title>Calculator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
 <style>
@@ -22,6 +22,24 @@ html, body {
   flex-direction:column;
   padding-top:env(safe-area-inset-top);
   padding-bottom:env(safe-area-inset-bottom);
+}
+
+/*** LANGUAGE BUTTON ***/
+.langBox {
+  padding:8px 14px;
+  display:flex;
+  justify-content:flex-end;
+}
+.langBtn {
+  padding:6px 12px;
+  border-radius:10px;
+  font-size:16px;
+  border:none;
+  background:#d6d6db;
+  font-weight:600;
+}
+.langBtn:active {
+  background:#c8c8ce;
 }
 
 /*** DISPLAY ***/
@@ -80,6 +98,10 @@ button {
 <body>
 <div class="container">
 
+<div class="langBox">
+  <button class="langBtn" onclick="toggleLang()" id="lang">Hindi</button>
+</div>
+
 <div class="displayBox">
   <div class="exp" id="exp"></div>
   <div class="res" id="res"></div>
@@ -117,22 +139,37 @@ button {
 <script>
 let exp=document.getElementById("exp");
 let res=document.getElementById("res");
+let lang="hi"; // default hindi
 
-function speakHin(txt){
+function toggleLang(){
+  lang = (lang==="hi") ? "en" : "hi";
+  document.getElementById("lang").textContent = (lang==="hi") ? "Hindi" : "English";
+}
+
+function speak(txt){
   let u=new SpeechSynthesisUtterance(txt);
-  u.lang="hi-IN";
   u.rate=1;
   u.pitch=1;
+  u.lang = (lang==="hi") ? "hi-IN" : "en-US";
   speechSynthesis.speak(u);
 }
 
-function convertToHindiSpeak(str){
+function convertHindi(str){
   return str
    .replace(/\*/g," गुणा ")
    .replace(/\+/g," प्लस ")
    .replace(/\-/g," माइनस ")
    .replace(/\//g," भाग ")
    .replace(/%/g," प्रतिशत ");
+}
+
+function convertEnglish(str){
+  return str
+   .replace(/\*/g," multiplied by ")
+   .replace(/\+/g," plus ")
+   .replace(/\-/g," minus ")
+   .replace(/\//g," divided by ")
+   .replace(/%/g," percent ");
 }
 
 function add(v){
@@ -154,12 +191,17 @@ function del(){
 function calc(){
   try{
     let r=eval(exp.textContent);
-    let hindiExp = convertToHindiSpeak(exp.textContent);
-    speakHin(hindiExp + " बराबर " + r);
+    let spoken;
+    if(lang==="hi"){
+      spoken = convertHindi(exp.textContent)+" बराबर "+r;
+    } else {
+      spoken = convertEnglish(exp.textContent)+" equals "+r;
+    }
+    speak(spoken);
     exp.textContent=r;
     res.textContent="";
   }catch{
-    speakHin("त्रुटि");
+    speak((lang==="hi")?"त्रुटि":"error");
   }
 }
 </script>
